@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ОТЗВУК — Архив данных</title>
+<style>
+:root{--bg:#0c0c0e;--bg2:#131316;--bg3:#1a1a1f;--accent:#8b3a2f;--accentL:#c45a4a;--accentG:rgba(139,58,47,.12);--text:#c8c2b8;--textD:#6b665e;--textM:#3d3a35;--brd:#222228;--cardBg:#161619;--cardH:#1e1e24;--cardB:#2a2a30}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999}
+.notif{position:fixed;top:16px;right:16px;z-index:9999;background:var(--bg3);border:1px solid var(--accent);color:var(--accentL);padding:10px 20px;font-size:12px;letter-spacing:1px;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--bg2);border:1px solid var(--brd);padding:32px;width:340px}
+.header{border-bottom:1px solid var(--brd);background:var(--bg2)}
+.header-line{height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.header-inner{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;flex-wrap:wrap;gap:12px}
+.logo{cursor:pointer}
+.logo h1{font-size:26px;font-weight:700;letter-spacing:12px;font-family:Georgia,serif;color:var(--text)}
+.logo p{font-size:9px;letter-spacing:4px;color:var(--textM);text-transform:uppercase;margin-top:1px}
+.hdr-right{display:flex;gap:10px;align-items:center}
+.inp{background:var(--bg3);border:1px solid var(--brd);color:var(--text);padding:8px 12px;font-size:13px;font-family:inherit;width:100%;outline:none;box-sizing:border-box}
+.inp:focus{border-color:var(--accent)}
+select.inp{cursor:pointer}
+.btn{background:var(--accent);border:none;color:#fff;padding:8px 16px;font-size:11px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;font-family:inherit}
+.btn:hover{opacity:.9}
+.btnD{background:#4a1a1a}
+.btnG{background:transparent;border:1px solid var(--brd);color:var(--textD)}
+.btnG:hover{border-color:var(--accent);color:var(--accentL)}
+.btnS{padding:5px 14px;font-size:10px}
+.layout{display:flex;min-height:calc(100vh - 70px)}
+.sidebar{width:250px;border-right:1px solid var(--brd);background:var(--bg2);flex-shrink:0;overflow-y:auto}
+.side-label{font-size:9px;letter-spacing:3px;color:var(--textM);padding:6px 18px;text-transform:uppercase}
+.side-item{padding:8px 18px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:.15s;border-left:2px solid transparent}
+.side-item:hover{color:var(--text)}
+.side-item.active{color:var(--accentL);border-left-color:var(--accentL);background:var(--accentG)}
+.side-item .cnt{font-size:10px;color:var(--textM)}
+.side-sec{padding:8px 18px;font-size:13px;cursor:pointer;display:flex;align-items:center;transition:.15s;border-left:2px solid transparent}
+.side-sec:hover{color:var(--text)}
+.side-sec.active{color:var(--accentL);border-left-color:var(--accentL);background:var(--accentG)}
+.side-sub{padding:6px 18px 6px 48px;font-size:12px;cursor:pointer;color:var(--textM);transition:.15s;border-left:2px solid transparent}
+.side-sub:hover{color:var(--textD)}
+.side-sub.active{color:var(--accentL);border-left-color:var(--accentL);background:var(--accentG)}
+.arrow{font-size:8px;margin-right:8px;color:var(--textM);display:inline-block;transition:.2s;cursor:pointer}
+.arrow.open{transform:rotate(90deg)}
+.sec-icon{font-size:10px;opacity:.4;margin-right:8px}
+.content{flex:1;padding:28px 36px;max-width:960px;overflow-y:auto}
+.hero{text-align:center;padding:36px 0 40px}
+.hero h2{font-size:44px;font-weight:700;letter-spacing:16px;font-family:Georgia,serif}
+.hero .line{width:40px;height:1px;background:var(--accent);margin:14px auto}
+.hero .quote{font-size:13px;color:var(--textD);max-width:460px;margin:0 auto;line-height:1.8;font-style:italic;font-family:Georgia,serif}
+.sec-head{margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--brd)}
+.sec-head small{font-size:9px;letter-spacing:3px;color:var(--textM);text-transform:uppercase;display:block;margin-bottom:3px}
+.sec-head h3{font-size:20px;font-family:Georgia,serif;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{background:var(--cardBg);border:1px solid var(--cardB);padding:18px;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column;gap:8px;min-height:170px}
+.card:hover{background:var(--cardH);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.card.dragging{opacity:.6;transform:scale(.95) rotate(-1deg)}
+.card.dragover{background:var(--accentG);border-color:var(--accentL);transform:translateX(6px)}
+.card-tab{position:absolute;top:-1px;left:12px;width:40px;height:8px;background:var(--cardBg);border-left:1px solid var(--cardB);border-right:1px solid var(--cardB)}
+.card .tag{font-size:9px;letter-spacing:1px;color:var(--textM);text-transform:uppercase}
+.card .title{font-size:15px;font-weight:700;font-family:Georgia,serif;line-height:1.3;flex:1}
+.card .excerpt{font-size:11px;color:var(--textD);line-height:1.4;overflow:hidden;max-height:32px}
+.card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.badge{font-size:9px;letter-spacing:1px;padding:2px 6px;border:1px solid;text-transform:uppercase}
+.card-btns{position:absolute;top:4px;right:4px;display:flex;gap:2px}
+.card-btn{background:var(--bg3);border:1px solid var(--brd);color:var(--textD);width:22px;height:22px;font-size:10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.card-btn.del{background:#2a1515;color:var(--accentL)}
+.add-card{background:transparent;border:1px dashed var(--brd);padding:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:170px;color:var(--textM);font-size:13px;flex-direction:column;gap:8px;transition:.2s}
+.add-card:hover{border-color:var(--accentL);color:var(--accentL)}
+.art-back{font-size:11px;color:var(--textD);cursor:pointer;margin-bottom:20px}
+.art-back:hover{color:var(--text)}
+.art-header{text-align:center;padding:20px 0 24px;border-bottom:1px solid var(--brd);margin-bottom:24px}
+.art-header .at{font-size:10px;letter-spacing:3px;color:var(--accentL);margin-bottom:6px}
+.art-header h2{font-size:30px;font-family:Georgia,serif;font-weight:700;margin-bottom:8px}
+.art-body{font-size:14px;line-height:1.9;color:var(--textD)}
+.art-body h2{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text);margin:28px 0 10px;font-weight:500;border-bottom:1px solid var(--brd);padding-bottom:6px}
+.art-body p{margin-bottom:12px}
+.att-head{font-size:11px;letter-spacing:3px;color:var(--textM);text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--brd)}
+.att-item{margin-bottom:24px}
+.att-label{font-size:12px;color:var(--textD);font-style:italic;margin-bottom:8px}
+.att-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.att-src{font-size:9px;color:var(--textM);letter-spacing:1px;padding:2px 6px;border:1px solid var(--brd)}
+.att-err{padding:20px;border:1px solid var(--brd);color:var(--textM);text-align:center;font-size:12px}
+.admin{background:var(--bg2);border-bottom:1px solid var(--brd);padding:18px 28px}
+.admin-tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.admin-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid var(--brd);margin-bottom:6px}
+.admin-sub{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 32px;border-left:1px solid var(--brd);border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);background:var(--bg)}
+.art-list-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--brd)}
+.att-ed{margin-bottom:8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--brd)}
+.att-ed-row{display:flex;gap:8px;align-items:center}
+.att-ed-info{font-size:9px;color:var(--textM);margin-top:4px;padding-left:58px}
+.footer{border-top:1px solid var(--brd);padding:16px;text-align:center;font-size:9px;letter-spacing:3px;color:var(--textM);text-transform:uppercase}
+@media(max-width:768px){.sidebar{width:200px}.content{padding:16px}.hero h2{font-size:28px;letter-spacing:8px}.grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+@media(max-width:600px){.layout{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--brd);max-height:200px}}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ===== OTZVUK CMS Engine =====
+const PASS = "otzvuk2026";
+const LS_SEC = "oz-gh-sec";
+const LS_ART = "oz-gh-art";
+
+const DEF_SEC = [
+  {id:"s1",name:"Существа и аномалии",icon:"◆",open:true,children:[{id:"s1a",name:"Класс «Тень»"},{id:"s1b",name:"Класс «Буря»"}]},
+  {id:"s2",name:"Локации",icon:"◆",open:false,children:[{id:"s2a",name:"Мёртвые города"},{id:"s2b",name:"Разломы"}]},
+  {id:"s3",name:"Флора",icon:"◆",open:false,children:[]},
+  {id:"s4",name:"Артефакты",icon:"◆",open:false,children:[]},
+];
+const DEF_ART = [
+  {id:"a1",sectionId:"s1a",title:"«Молчащий»",tag:"Досье #0041",badge:"Опасный",badgeColor:"#c4342d",excerpt:"Гуманоидная сущность. Зона тишины: 40м.",content:"<h2>Описание</h2><p>Гуманоидная фигура ростом 2.7 метра. Подавляет звуки в радиусе 40м.</p><h2>Поведение</h2><p>Не агрессивен, пока субъект не издаёт звук в зоне влияния.</p>",attachments:[],date:"14.03.2026"},
+  {id:"a2",sectionId:"s2a",title:"Станция «Рассвет»",tag:"Локация #012",badge:"Не исследовано",badgeColor:"#c4892d",excerpt:"Заброшенная станция.",content:"<h2>Описание</h2><p>Последний сигнал — 847 дней назад.</p>",attachments:[],date:"10.03.2026"},
+  {id:"a3",sectionId:"s3",title:"«Слушки» (грибы)",tag:"Ф-002",badge:"Изучается",badgeColor:"#c4892d",excerpt:"Фосфоресцирующие грибы.",content:"<h2>Описание</h2><p>Бледные грибы, фосфоресцируют зеленовато-белым.</p>",attachments:[],date:"06.03.2026"},
+];
+
+// State
+let state = {
+  sections: JSON.parse(localStorage.getItem(LS_SEC)) || DEF_SEC,
+  articles: JSON.parse(localStorage.getItem(LS_ART)) || DEF_ART,
+  isAdmin: false, view: "home", selArt: null, selSec: null,
+  adminPanel: false, adminTab: "sections", editArt: null,
+  dragId: null, dragOver: null
+};
+
+const save = () => { localStorage.setItem(LS_SEC, JSON.stringify(state.sections)); localStorage.setItem(LS_ART, JSON.stringify(state.articles)); };
+const uid = () => Math.random().toString(36).slice(2,10);
+const today = () => new Date().toLocaleDateString("ru-RU");
+
+// URL conversion
+function getGDriveId(u){const m=u.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);if(m)return m[1];const m2=u.match(/[?&]id=([a-zA-Z0-9_-]+)/);return m2?m2[1]:null;}
+function convertUrl(u,t){
+  if(!u)return{src:"",source:""};
+  if(u.includes("drive.google.com")||u.includes("docs.google.com")){const id=getGDriveId(u);if(id)return t==="pdf"?{src:`https://drive.google.com/file/d/${id}/preview`,source:"Google Drive"}:{src:`https://drive.google.com/uc?export=view&id=${id}`,source:"Google Drive"};}
+  if(u.includes("github.com")&&u.includes("/blob/")){return{src:u.replace("github.com","raw.githubusercontent.com").replace("/blob/","/"),source:"GitHub"};}
+  if(u.includes("raw.githubusercontent.com"))return{src:u,source:"GitHub"};
+  if(u.includes("imgur.com")&&!u.match(/\.(jpg|jpeg|png|gif|webp)$/i)){const m=u.match(/imgur\.com\/([a-zA-Z0-9]+)$/);if(m)return{src:`https://i.imgur.com/${m[1]}.jpg`,source:"Imgur"};}
+  return{src:u,source:"Ссылка"};
+}
+function srcLabel(u){if(!u)return"";if(u.includes("drive.google"))return"Google Drive";if(u.includes("github"))return"GitHub";if(u.includes("imgur"))return"Imgur";return"Ссылка";}
+
+// Helpers
+const secName = (id) => { for(const s of state.sections){if(s.id===id)return s.name;for(const c of(s.children||[]))if(c.id===id)return c.name;}return""; };
+const allOpts = () => { const o=[];state.sections.forEach(s=>{o.push({id:s.id,name:s.name,d:0});(s.children||[]).forEach(c=>o.push({id:c.id,name:c.name,d:1}));});return o; };
+const getFiltered = () => { if(!state.selSec)return state.articles;const sec=state.sections.find(s=>s.id===state.selSec);if(sec){const ids=[sec.id,...(sec.children||[]).map(c=>c.id)];return state.articles.filter(a=>ids.includes(a.sectionId));}return state.articles.filter(a=>a.sectionId===state.selSec); };
+const secArticleCount = (sec) => { const ids=[sec.id,...(sec.children||[]).map(c=>c.id)];return state.articles.filter(a=>ids.includes(a.sectionId)).length; };
+
+let notifTimer;
+function notify(msg){clearTimeout(notifTimer);render();setTimeout(()=>{const n=document.getElementById('notif');if(n){n.textContent=msg;n.style.display='block';}},0);notifTimer=setTimeout(()=>{const n=document.getElementById('notif');if(n)n.style.display='none';},2200);}
+
+// ===== RENDER =====
+function render(){
+  const app = document.getElementById('app');
+  const f = getFiltered();
+  let h = `<div id="notif" class="notif" style="display:none"></div>`;
+
+  // Header
+  h += `<div class="header"><div class="header-line"></div><div class="header-inner">
+    <div class="logo" onclick="nav('home')"><h1>ОТЗВУК</h1><p>Архив данных</p></div>
+    <div class="hdr-right"><span style="font-size:11px;color:var(--textD)">Записей: ${state.articles.length}</span>`;
+  if(state.isAdmin){
+    h += `<button class="btn btnS" onclick="toggleAdmin()">${state.adminPanel?'✕ Закрыть':'⚙ Админ'}</button>`;
+    h += `<button class="btn btnG btnS" onclick="logout()">Выйти</button>`;
+  } else {
+    h += `<button class="btn btnG btnS" onclick="showLogin()">🔒 Войти</button>`;
+  }
+  h += `</div></div></div>`;
+
+  // Admin panel
+  if(state.adminPanel && state.isAdmin) h += renderAdmin();
+
+  // Main layout
+  if(!state.adminPanel){
+    h += `<div class="layout">`;
+    // Sidebar
+    h += `<div class="sidebar"><div style="padding:14px 0"><div class="side-label">Навигация</div>`;
+    h += `<div class="side-item ${!state.selSec?'active':''}" onclick="filterSec(null)"><span>Все записи</span><span class="cnt">${state.articles.length}</span></div>`;
+    state.sections.forEach(sec => {
+      h += `<div class="side-sec ${state.selSec===sec.id?'active':''}" onclick="filterSec('${sec.id}')">
+        <span class="arrow ${sec.open?'open':''}" onclick="event.stopPropagation();toggleSec('${sec.id}')">▶</span>
+        <span class="sec-icon">${sec.icon}</span><span style="flex:1">${sec.name}</span>
+        <span class="cnt">${secArticleCount(sec)}</span></div>`;
+      if(sec.open)(sec.children||[]).forEach(ch => {
+        h += `<div class="side-sub ${state.selSec===ch.id?'active':''}" onclick="filterSec('${ch.id}')">└ ${ch.name} <span class="cnt" style="margin-left:6px">${state.articles.filter(a=>a.sectionId===ch.id).length}</span></div>`;
+      });
+    });
+    h += `</div></div>`;
+
+    // Content
+    h += `<div class="content">`;
+    if(state.view==='home'){
+      if(!state.selSec) h += `<div class="hero"><h2>ОТЗВУК</h2><div class="line"></div><div class="quote">«Мир не кончился. Он просто стал другим — тише, темнее, и с памятью, которая иногда возвращается в виде отзвуков.»</div></div>`;
+      else h += `<div class="sec-head"><small>Раздел</small><h3>${secName(state.selSec)}</h3></div>`;
+      if(f.length===0) h += `<div style="color:var(--textM);font-size:13px;text-align:center;padding:40px">Нет записей.</div>`;
+      h += `<div class="grid">`;
+      f.forEach(art => {
+        const atts = (art.attachments||[]).length;
+        h += `<div class="card" ${state.isAdmin?`draggable="true" ondragstart="dStart('${art.id}')" ondragover="dOver(event,'${art.id}')" ondragend="dEnd()" ondrop="dDrop('${art.id}')"`:''}
+          onclick="openArt('${art.id}')" id="card-${art.id}">
+          <div class="card-tab" style="border-top:2px solid ${art.badgeColor||'var(--accent)'}"></div>
+          <div class="tag">${art.tag}</div>
+          <div class="title">${art.title}</div>
+          <div class="excerpt">${art.excerpt}</div>
+          <div class="meta"><span class="badge" style="color:${art.badgeColor||'var(--accent)'};border-color:${art.badgeColor||'var(--accent)'}">${art.badge}</span>
+          ${atts>0?`<span style="font-size:9px;color:var(--textM)">📎 ${atts}</span>`:''}
+          </div>`;
+        if(state.isAdmin) h += `<div class="card-btns"><button class="card-btn" onclick="event.stopPropagation();editArt('${art.id}')">✎</button><button class="card-btn del" onclick="event.stopPropagation();delArt('${art.id}')">✕</button></div>`;
+        h += `</div>`;
+      });
+      if(state.isAdmin) h += `<div class="add-card" onclick="newArt()"><span style="font-size:28px;opacity:.4">+</span>Добавить</div>`;
+      h += `</div>`;
+    }
+
+    if(state.view==='article' && state.selArt){
+      const a = state.selArt;
+      h += `<div class="art-back" onclick="nav('home')">← Вернуться</div>`;
+      h += `<div class="art-header"><div class="at">${a.tag} • ${secName(a.sectionId)}</div><h2>${a.title}</h2>
+        <span class="badge" style="color:${a.badgeColor||'var(--accent)'};border-color:${a.badgeColor||'var(--accent)'}">${a.badge}</span>
+        <div style="font-size:10px;color:var(--textM);margin-top:8px">${a.date}</div></div>`;
+      if(a.content) h += `<div class="art-body">${a.content}</div>`;
+      if((a.attachments||[]).length>0){
+        h += `<div style="margin-top:24px"><div class="att-head">Прикреплённые файлы</div>`;
+        a.attachments.forEach(att => {
+          const cv = convertUrl(att.url, att.type);
+          h += `<div class="att-item">`;
+          h += `<div class="att-meta">${att.label?`<div class="att-label">${att.label}</div>`:'<div></div>'}<div class="att-src">${srcLabel(att.url)} • ${att.type.toUpperCase()}</div></div>`;
+          if(att.type==='pdf'&&cv.src) h += `<iframe src="${cv.src}" style="width:100%;height:700px;border:1px solid var(--brd);background:#fff" allowfullscreen></iframe>`;
+          if(att.type==='image'&&cv.src) h += `<img src="${cv.src}" style="width:100%;border:1px solid var(--brd);display:block" onerror="this.outerHTML='<div class=att-err>Не удалось загрузить. Проверьте ссылку.</div>'">`;
+          h += `</div>`;
+        });
+        h += `</div>`;
+      }
+    }
+    h += `</div></div>`;
+  }
+
+  h += `<div class="footer">ОТЗВУК • Архив • 2026</div>`;
+  app.innerHTML = h;
+}
+
+// ===== Admin Panel Render =====
+function renderAdmin(){
+  let h = `<div class="admin"><div class="admin-tabs">
+    <button class="btn btnG btnS ${state.adminTab==='sections'?'':'btnG'}" style="${state.adminTab==='sections'?'background:var(--bg3);color:var(--text)':''}" onclick="adminTab('sections')">Разделы</button>
+    <button class="btn btnG btnS" style="${state.adminTab==='articles'?'background:var(--bg3);color:var(--text)':''}" onclick="adminTab('articles')">Статьи</button>
+    <button class="btn btnG btnS" style="${state.adminTab==='edit'?'background:var(--bg3);color:var(--text)':''}" onclick="adminTab('edit')">${state.editArt?.id?'Редактировать':'+ Новая статья'}</button>
+  </div>`;
+
+  if(state.adminTab==='sections'){
+    h += `<div style="max-width:600px">
+      <div style="display:flex;gap:8px;margin-bottom:12px"><input class="inp" id="newSec" placeholder="Новый раздел..." onkeydown="if(event.key==='Enter')addSec()"><button class="btn" onclick="addSec()">Добавить</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:18px">
+        <select class="inp" id="subParent" style="width:auto;min-width:140px"><option value="">Родитель...</option>${state.sections.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+        <input class="inp" id="newSub" placeholder="Подраздел..." onkeydown="if(event.key==='Enter')addSub()">
+        <button class="btn" onclick="addSub()">Добавить</button></div>`;
+    state.sections.forEach(s => {
+      h += `<div class="admin-row"><span style="flex:1;font-size:14px">${s.icon} ${s.name}</span>
+        <button class="btn btnG btnS" onclick="renSecPrompt('${s.id}')">✎</button>
+        <button class="btn btnD btnS" onclick="delSecConfirm('${s.id}')">✕</button></div>`;
+      (s.children||[]).forEach(ch => {
+        h += `<div class="admin-sub"><span style="color:var(--textM)">└</span><span style="flex:1;font-size:13px;color:var(--textD)">${ch.name}</span>
+          <button class="btn btnG btnS" onclick="renSubPrompt('${s.id}','${ch.id}')">✎</button>
+          <button class="btn btnD btnS" onclick="delSub('${s.id}','${ch.id}')">✕</button></div>`;
+      });
+    });
+    h += `</div>`;
+  }
+
+  if(state.adminTab==='articles'){
+    h += `<div style="max-width:700px">`;
+    if(state.articles.length===0) h += `<div style="color:var(--textM)">Нет статей.</div>`;
+    state.articles.forEach(a => {
+      const sn = allOpts().find(o=>o.id===a.sectionId)?.name||'—';
+      h += `<div class="art-list-row"><span style="font-size:10px;color:var(--textM);width:70px">${a.tag}</span>
+        <span style="flex:1;font-size:13px">${a.title}</span><span style="font-size:10px;color:var(--textM)">${sn}</span>
+        ${(a.attachments||[]).length>0?`<span style="font-size:10px;color:var(--textM)">📎${a.attachments.length}</span>`:''}
+        <button class="btn btnG btnS" onclick="editArt('${a.id}')">✎</button>
+        <button class="btn btnD btnS" onclick="delArt('${a.id}')">✕</button></div>`;
+    });
+    h += `</div>`;
+  }
+
+  if(state.adminTab==='edit'){
+    const a = state.editArt || {title:'',tag:'',badge:'',badgeColor:'#c4892d',excerpt:'',content:'',sectionId:state.sections[0]?.id||'',attachments:[]};
+    const opts = allOpts().map(o=>`<option value="${o.id}" ${o.id===a.sectionId?'selected':''}>${o.d?'  └ ':''}${o.name}</option>`).join('');
+    h += `<div style="max-width:700px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:14px;font-weight:700">${a.id?'Редактировать':'Новая статья'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input class="inp" id="ed-title" placeholder="Заголовок" value="${a.title||''}">
+        <input class="inp" id="ed-tag" placeholder="Тег (Досье #042)" value="${a.tag||''}">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px">
+        <select class="inp" id="ed-sec">${opts}</select>
+        <input class="inp" id="ed-badge" placeholder="Статус" value="${a.badge||''}">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--textD)">Цвет:</span><input type="color" id="ed-color" value="${a.badgeColor||'#c4892d'}" style="width:30px;height:30px;border:none;cursor:pointer;background:none"></div>
+      </div>
+      <input class="inp" id="ed-excerpt" placeholder="Краткое описание" value="${a.excerpt||''}">
+      <div style="font-size:10px;color:var(--textD)">Текст (HTML)</div>
+      <textarea class="inp" id="ed-content" style="height:120px;resize:vertical">${a.content||''}</textarea>
+      <div style="border-top:1px solid var(--brd);padding-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:12px">Файлы (${(a.attachments||[]).length})</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btnG" style="padding:4px 10px;font-size:10px" onclick="addAttachment('image')">+ Картинка</button>
+            <button class="btn btnG" style="padding:4px 10px;font-size:10px" onclick="addAttachment('pdf')">+ PDF</button>
+          </div>
+        </div>
+        <div id="att-list">`;
+    (a.attachments||[]).forEach((att,i) => {
+      const src = srcLabel(att.url);
+      h += `<div class="att-ed"><div class="att-ed-row">
+        <span style="font-size:10px;color:${att.type==='pdf'?'var(--accentL)':'#5a9a6a'};width:50px;flex-shrink:0;text-transform:uppercase;letter-spacing:1px">${att.type==='pdf'?'📄 PDF':'🖼 IMG'}</span>
+        <input class="inp" style="flex:1" placeholder="Ссылка (Google Drive, GitHub, Imgur...)" value="${att.url||''}" oninput="updAtt(${i},'url',this.value)">
+        <input class="inp" style="width:120px" placeholder="Подпись" value="${att.label||''}" oninput="updAtt(${i},'label',this.value)">
+        <button class="btn btnD" style="padding:4px 8px;font-size:10px" onclick="delAttachment(${i})">✕</button>
+      </div>${att.url?`<div class="att-ed-info">Источник: ${src}</div>`:''}</div>`;
+    });
+    if((a.attachments||[]).length===0) h += `<div style="font-size:11px;color:var(--textM);padding:8px 0">Поддерживаются: Google Drive, GitHub, Imgur, прямые ссылки.</div>`;
+    h += `</div></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn" style="padding:10px 24px;font-size:12px" onclick="saveArt()">${a.id?'Сохранить':'Создать'}</button>
+        <button class="btn btnG" style="padding:10px 24px;font-size:12px" onclick="cancelEdit()">Отмена</button>
+      </div></div>`;
+  }
+
+  h += `</div>`;
+  return h;
+}
+
+// ===== Actions =====
+function nav(v){state.view=v;state.selArt=null;state.selSec=null;state.adminPanel=false;render();window.scrollTo(0,0);}
+function filterSec(id){state.selSec=id;state.view='home';state.selArt=null;render();}
+function toggleSec(id){state.sections=state.sections.map(s=>s.id===id?{...s,open:!s.open}:s);save();render();}
+function toggleAdmin(){state.adminPanel=!state.adminPanel;if(state.adminPanel)state.adminTab='sections';render();}
+function adminTab(t){state.adminTab=t;if(t==='edit'&&!state.editArt)state.editArt={title:'',tag:'',badge:'',badgeColor:'#c4892d',excerpt:'',content:'',sectionId:state.sections[0]?.id||'',attachments:[]};render();}
+function showLogin(){const p=prompt('Введите пароль:');if(p===PASS){state.isAdmin=true;notify('Админ-режим активирован');}else if(p!==null){alert('Неверный пароль');}render();}
+function logout(){state.isAdmin=false;state.adminPanel=false;notify('Вышли из админки');render();}
+
+// Sections
+function addSec(){const el=document.getElementById('newSec');if(!el||!el.value.trim())return;state.sections.push({id:uid(),name:el.value.trim(),icon:'◆',open:false,children:[]});save();notify('Раздел добавлен');render();}
+function addSub(){const p=document.getElementById('subParent')?.value;const el=document.getElementById('newSub');if(!p||!el||!el.value.trim())return;state.sections=state.sections.map(s=>s.id===p?{...s,children:[...(s.children||[]),{id:uid(),name:el.value.trim()}]}:s);save();notify('Подраздел добавлен');render();}
+function renSecPrompt(id){const s=state.sections.find(x=>x.id===id);const n=prompt('Новое название:',s?.name);if(n&&n.trim()){state.sections=state.sections.map(x=>x.id===id?{...x,name:n.trim()}:x);save();notify('Переименовано');render();}}
+function renSubPrompt(pid,cid){const s=state.sections.find(x=>x.id===pid);const ch=s?.children?.find(c=>c.id===cid);const n=prompt('Новое название:',ch?.name);if(n&&n.trim()){state.sections=state.sections.map(x=>x.id===pid?{...x,children:x.children.map(c=>c.id===cid?{...c,name:n.trim()}:c)}:x);save();notify('Переименовано');render();}}
+function delSecConfirm(id){const s=state.sections.find(x=>x.id===id);if(confirm(`Удалить "${s?.name}" и все статьи?`)){const ids=[id,...(s?.children||[]).map(c=>c.id)];state.sections=state.sections.filter(x=>x.id!==id);state.articles=state.articles.filter(a=>!ids.includes(a.sectionId));save();notify('Удалено');render();}}
+function delSub(pid,cid){state.sections=state.sections.map(s=>s.id===pid?{...s,children:s.children.filter(c=>c.id!==cid)}:s);state.articles=state.articles.filter(a=>a.sectionId!==cid);save();notify('Удалено');render();}
+
+// Articles
+function openArt(id){const a=state.articles.find(x=>x.id===id);if(a){state.selArt=a;state.view='article';render();window.scrollTo(0,0);}}
+function newArt(){state.editArt={title:'',tag:'',badge:'',badgeColor:'#c4892d',excerpt:'',content:'',sectionId:state.selSec||state.sections[0]?.id||'',attachments:[]};state.adminPanel=true;state.adminTab='edit';render();}
+function editArt(id){const a=state.articles.find(x=>x.id===id);if(a){state.editArt={...a,attachments:a.attachments||[]};state.adminPanel=true;state.adminTab='edit';render();}}
+function delArt(id){const a=state.articles.find(x=>x.id===id);if(confirm(`Удалить "${a?.title}"?`)){state.articles=state.articles.filter(x=>x.id!==id);if(state.selArt?.id===id){state.selArt=null;state.view='home';}save();notify('Удалено');render();}}
+function cancelEdit(){state.editArt=null;state.adminTab='articles';render();}
+function saveArt(){
+  const t=document.getElementById('ed-title')?.value;if(!t?.trim())return;
+  const art={
+    id:state.editArt?.id||null,title:t.trim(),
+    tag:document.getElementById('ed-tag')?.value||'',
+    sectionId:document.getElementById('ed-sec')?.value||'',
+    badge:document.getElementById('ed-badge')?.value||'',
+    badgeColor:document.getElementById('ed-color')?.value||'#c4892d',
+    excerpt:document.getElementById('ed-excerpt')?.value||'',
+    content:document.getElementById('ed-content')?.value||'',
+    attachments:state.editArt?.attachments||[],
+    date:state.editArt?.date||today()
+  };
+  if(art.id){state.articles=state.articles.map(a=>a.id===art.id?art:a);notify('Сохранено');}
+  else{art.id=uid();state.articles.push(art);notify('Создано');}
+  save();state.editArt=null;state.adminTab='articles';render();
+}
+
+// Attachments
+function addAttachment(type){if(!state.editArt)return;state.editArt.attachments=[...(state.editArt.attachments||[]),{type,url:'',label:''}];render();}
+function updAtt(i,k,v){if(!state.editArt)return;state.editArt.attachments[i]={...state.editArt.attachments[i],[k]:v};render();}
+function delAttachment(i){if(!state.editArt)return;state.editArt.attachments=state.editArt.attachments.filter((_,j)=>j!==i);render();}
+
+// Drag and drop
+function dStart(id){state.dragId=id;}
+function dOver(e,id){if(!state.isAdmin)return;e.preventDefault();const el=document.getElementById('card-'+id);if(el)el.classList.add('dragover');state.dragOver=id;}
+function dEnd(){document.querySelectorAll('.card').forEach(c=>c.classList.remove('dragover','dragging'));state.dragId=null;state.dragOver=null;}
+function dDrop(tid){
+  if(!state.isAdmin||!state.dragId||state.dragId===tid){dEnd();return;}
+  const fi=state.articles.findIndex(a=>a.id===state.dragId);
+  const ti=state.articles.findIndex(a=>a.id===tid);
+  if(fi>=0&&ti>=0){const[item]=state.articles.splice(fi,1);state.articles.splice(ti,0,item);save();notify('Порядок изменён');}
+  dEnd();render();
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
