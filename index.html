@@ -81,7 +81,7 @@ select.inp{cursor:pointer}
 .att-item{margin-bottom:24px}
 .att-label{font-size:12px;color:var(--textD);font-style:italic;margin-bottom:8px}
 .att-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.att-src{font-size:9px;color:var(--textM);letter-spacing:1px;padding:2px 6px;border:1px solid var(--brd)}
+.att-src{display:none}
 .att-err{padding:20px;border:1px solid var(--brd);color:var(--textM);text-align:center;font-size:12px}
 .admin{background:var(--bg2);border-bottom:1px solid var(--brd);padding:18px 28px}
 .admin-tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
@@ -228,8 +228,9 @@ function render(){
           const cv = convertUrl(att.url, att.type);
           h += `<div class="att-item">`;
           h += `<div class="att-meta">${att.label?`<div class="att-label">${att.label}</div>`:'<div></div>'}<div class="att-src">${srcLabel(att.url)} • ${att.type.toUpperCase()}</div></div>`;
-          if(att.type==='pdf'&&cv.src) h += `<iframe src="${cv.src}" style="width:100%;height:700px;border:1px solid var(--brd);background:#fff" allowfullscreen></iframe>`;
+          if(att.type==='pdf'&&cv.src) h += `<div style="width:100%;height:680px;overflow:hidden;border:1px solid var(--brd);position:relative"><div style="position:absolute;top:0;left:0;right:0;height:50px;background:var(--cardBg);border-bottom:1px solid var(--brd);pointer-events:none;z-index:2"></div><iframe src="${cv.src}" style="width:100%;height:800px;border:none;background:#fff;margin-top:0" scrolling="auto"></iframe><div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:var(--cardBg);pointer-events:none;z-index:2"></div></div>`;
           if(att.type==='image'&&cv.src) h += `<img src="${cv.src}" style="width:100%;border:1px solid var(--brd);display:block" onerror="this.outerHTML='<div class=att-err>Не удалось загрузить. Проверьте ссылку.</div>'">`;
+          if(att.afterText) h += `<div class="art-body" style="margin-top:14px">${att.afterText}</div>`;
           h += `</div>`;
         });
         h += `</div>`;
@@ -317,7 +318,9 @@ function renderAdmin(){
         <input class="inp" style="flex:1" placeholder="Ссылка (Google Drive, GitHub, Imgur...)" value="${att.url||''}" oninput="updAtt(${i},'url',this.value)">
         <input class="inp" style="width:120px" placeholder="Подпись" value="${att.label||''}" oninput="updAtt(${i},'label',this.value)">
         <button class="btn btnD" style="padding:4px 8px;font-size:10px" onclick="delAttachment(${i})">✕</button>
-      </div>${att.url?`<div class="att-ed-info">Источник: ${src}</div>`:''}</div>`;
+      </div>${att.url?`<div class="att-ed-info">Источник: ${src}</div>`:''}
+      <textarea class="inp" style="height:60px;resize:vertical;margin-top:6px;font-size:11px" placeholder="Текст после файла (необязательно, HTML)" oninput="updAtt(${i},'afterText',this.value)">${att.afterText||''}</textarea>
+      </div>`;
     });
     if((a.attachments||[]).length===0) h += `<div style="font-size:11px;color:var(--textM);padding:8px 0">Поддерживаются: Google Drive, GitHub, Imgur, прямые ссылки.</div>`;
     h += `</div></div>
